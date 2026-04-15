@@ -187,7 +187,7 @@
       left: 0;
       width: 100%;
       z-index: 1000;
-      padding: 0 24px;
+      padding: 0 16px;
       height: 48px;
       display: flex;
       align-items: center;
@@ -197,6 +197,15 @@
       -webkit-backdrop-filter: saturate(180%) blur(20px);
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       transition: background 0.3s;
+      overflow-x: auto;
+      overflow-y: hidden;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+
+    .navbar::-webkit-scrollbar {
+      display: none;
     }
 
     .navbar a {
@@ -895,6 +904,86 @@
       .team-cards {
         gap: 32px;
       }
+
+      /* Global mobile tightening */
+      .container {
+        padding: 0 16px;
+      }
+
+      section {
+        min-height: auto;
+        padding: 80px 0;
+      }
+
+      .hero {
+        padding: 100px 16px 60px;
+      }
+
+      .navbar {
+        justify-content: flex-start;
+      }
+
+      .navbar a {
+        padding: 0 10px;
+        font-size: 12px;
+        flex: 0 0 auto;
+      }
+
+      /* Architecture PDF -> show image fallback on mobile */
+      .arch-diagram {
+        height: auto !important;
+        min-height: 280px;
+      }
+
+      .arch-diagram object,
+      .arch-diagram embed {
+        display: none;
+      }
+
+      .arch-diagram .arch-mobile {
+        display: flex !important;
+      }
+
+      /* Metrics table horizontal scroll */
+      .metrics-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* Qualitative grid stacks on very small screens */
+      .qual-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .ct-img {
+        aspect-ratio: 1 !important;
+        width: 100%;
+      }
+    }
+
+    .arch-mobile {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 20px;
+      text-align: center;
+      color: #1d1d1f;
+      gap: 16px;
+    }
+
+    .arch-mobile a {
+      display: inline-block;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #2997ff, #30d5c8);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 15px;
     }
   </style>
 </head>
@@ -958,11 +1047,12 @@
       <div class="arch-diagram reveal-scale stagger-2" style="height:600px;background:#fff;border-radius:12px;overflow:hidden;">
         <object data="fig2_architecture%20(1).pdf#view=FitH&toolbar=0&navpanes=0" type="application/pdf" width="100%" height="100%">
           <embed src="fig2_architecture%20(1).pdf#view=FitH&toolbar=0&navpanes=0" type="application/pdf" width="100%" height="100%" />
-          <p style="color:#1d1d1f;padding:20px;">
-            Architecture Diagram — Dual-Domain Network with Differentiable Radon Bridge.
-            <a href="fig2_architecture%20(1).pdf" target="_blank">Download PDF</a>
-          </p>
         </object>
+        <div class="arch-mobile">
+          <strong style="font-size:17px;">Architecture Diagram</strong>
+          <span style="color:#6e6e73;font-size:14px;">Dual-Domain Network with Differentiable Radon Bridge</span>
+          <a href="fig2_architecture%20(1).pdf" target="_blank" rel="noopener">Open PDF</a>
+        </div>
       </div>
       <div class="feature-cards">
         <div class="glass-card reveal stagger-2">
@@ -1420,7 +1510,7 @@
         Zirvesi 2026</p>
       <p class="reveal stagger-1">Anadolu Universitesi · 20–21 Nisan 2026</p>
       <div class="footer-divider"></div>
-      <p class="reveal stagger-2">Eskişehir Teknik Üniversitesi - Elektrik ve Elektronik Mühendisliği </p>
+      <p class="reveal stagger-2">Eskisehir Teknik Universitesi · Elektrik Elektronik Muhendisligi</p>
       <div class="footer-links reveal stagger-3">
         <a href="#">GitHub</a>
         <a href="mailto:ongerek@eskisehir.edu.tr">Contact</a>
