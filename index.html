@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dual-Domain Low-Dose CT Enhancement — ESTUYZ 2026</title>
+  <style>
+    /* ===== RESET & BASE ===== */
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: #0a0a0a;
+      color: #f5f5f7;
+      font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      font-weight: 700;
+      line-height: 1.08;
+      letter-spacing: -0.02em;
+    }
+
+    /* ===== NOISE OVERLAY ===== */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 256px 256px;
+    }
+
+    /* ===== UTILITY ===== */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #2997ff, #30d5c8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .secondary {
+      color: #86868b;
+    }
+
+    .section-heading {
+      font-size: clamp(48px, 8vw, 80px);
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .section-subheading {
+      font-size: clamp(22px, 3vw, 32px);
+      text-align: center;
+      margin-bottom: 60px;
+      font-weight: 600;
+    }
+
+    /* ===== SCROLL ANIMATIONS ===== */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal-scale {
+      opacity: 0;
+      transform: scale(0.85);
+      transition: opacity 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .reveal-scale.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .reveal-left {
+      opacity: 0;
+      transform: translateX(-40px);
+      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    }
+
+    .reveal-left.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .reveal-right {
+      opacity: 0;
+      transform: translateX(40px);
+      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    }
+
+    .reveal-right.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .stagger-1 {
+      transition-delay: 0.1s;
+    }
+
+    .stagger-2 {
+      transition-delay: 0.2s;
+    }
+
+    .stagger-3 {
+      transition-delay: 0.3s;
+    }
+
+    .stagger-4 {
+      transition-delay: 0.4s;
+    }
+
+    .stagger-5 {
+      transition-delay: 0.5s;
+    }
+
+    .stagger-6 {
+      transition-delay: 0.6s;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      .reveal,
+      .reveal-scale,
+      .reveal-left,
+      .reveal-right {
+        opacity: 1;
+        transform: none;
+        transition: none;
+      }
+
+      .scroll-chevron {
+        animation: none !important;
+      }
+
+      .chart-line {
+        animation: none !important;
+        stroke-dashoffset: 0 !important;
+      }
+    }
+
+    /* ===== NAVBAR ===== */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      padding: 0 24px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(10, 10, 10, 0.72);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      transition: background 0.3s;
+    }
+
+    .navbar a {
+      color: #86868b;
+      text-decoration: none;
+      font-size: 13px;
+      padding: 0 16px;
+      transition: color 0.3s;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+    }
+
+    .navbar a:hover,
+    .navbar a.active {
+      color: #f5f5f7;
+    }
+
+    /* ===== HERO ===== */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      position: relative;
+    }
+
+    .event-badge {
+      display: inline-block;
+      padding: 8px 24px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50px;
+      font-size: 12px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #86868b;
+      margin-bottom: 40px;
+      font-weight: 600;
+      opacity: 0;
+      transform: translateY(-20px);
+      animation: badgeIn 0.8s 0.3s ease-out forwards;
+    }
+
+    @keyframes badgeIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hero-title {
+      font-size: clamp(52px, 10vw, 96px);
+      line-height: 1.05;
+      margin-bottom: 24px;
+    }
+
+    .hero-title .line {
+      display: block;
+      opacity: 0;
+      transform: translateY(40px);
+      animation: titleIn 0.7s ease-out forwards;
+    }
+
+    .hero-title .line:nth-child(1) {
+      animation-delay: 0.5s;
+    }
+
+    .hero-title .line:nth-child(2) {
+      animation-delay: 0.7s;
+    }
+
+    @keyframes titleIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hero-subtitle {
+      font-size: clamp(16px, 2.5vw, 22px);
+      color: #86868b;
+      margin-bottom: 32px;
+      opacity: 0;
+      animation: fadeUp 0.7s 0.9s ease-out forwards;
+    }
+
+    @keyframes fadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hero-subtitle {
+      transform: translateY(20px);
+    }
+
+    .hero-divider {
+      width: 60px;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.2);
+      margin: 0 auto 24px;
+      opacity: 0;
+      animation: fadeUp 0.7s 1.1s ease-out forwards;
+      transform: translateY(20px);
+    }
+
+    .hero-meta {
+      font-size: 15px;
+      color: #86868b;
+      opacity: 0;
+      animation: fadeUp 0.7s 1.2s ease-out forwards;
+      transform: translateY(20px);
+    }
+
+    .scroll-chevron {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      animation: fadeUp 0.7s 1.5s ease-out forwards, bounce 2s 2.2s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+
+      0%,
+      100% {
+        transform: translateX(-50%) translateY(0);
+      }
+
+      50% {
+        transform: translateX(-50%) translateY(10px);
+      }
+    }
+
+    .scroll-chevron svg {
+      width: 24px;
+      height: 24px;
+      stroke: #86868b;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    /* ===== SECTION BASE ===== */
+    section {
+      min-height: 100vh;
+      padding: 120px 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* ===== PROBLEM SECTION ===== */
+    .problem-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+
+    .problem-text {
+      font-size: 18px;
+      color: #b0b0b5;
+      line-height: 1.8;
+    }
+
+    .problem-text p {
+      font-size: clamp(16px, 1.5vw, 20px);
+    }
+
+    .comparison-box {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .img-placeholder {
+      border: 1px dashed rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #86868b;
+      font-size: 13px;
+      text-align: center;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.02);
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .img-placeholder::after {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 16px;
+      background: radial-gradient(ellipse at center, rgba(41, 151, 255, 0.05), transparent 70%);
+      pointer-events: none;
+    }
+
+    .comparison-arrow {
+      font-size: 32px;
+      color: #2997ff;
+      flex-shrink: 0;
+    }
+
+    /* ===== ARCHITECTURE SECTION ===== */
+    .arch-diagram {
+      max-width: 1100px;
+      width: 100%;
+      height: 500px;
+      margin: 0 auto 60px;
+    }
+
+    .feature-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 36px 28px;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .glass-card:hover {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .glass-card .icon {
+      font-size: 36px;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .glass-card h3 {
+      font-size: 20px;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .glass-card p {
+      font-size: 15px;
+      color: #86868b;
+      line-height: 1.6;
+    }
+
+    /* ===== CHARTS ===== */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+    }
+
+    .chart-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+      padding: 28px 20px;
+    }
+
+    .chart-box h3 {
+      font-size: 16px;
+      margin-bottom: 16px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .chart-box svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .chart-legend {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin-top: 12px;
+      font-size: 12px;
+      color: #86868b;
+    }
+
+    .chart-legend span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    /* ===== ABLATION ===== */
+    .ablation-charts {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      margin-bottom: 48px;
+    }
+
+    .ablation-chart-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+      padding: 28px 20px;
+    }
+
+    .ablation-chart-box h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+
+    .ablation-chart-box .sub {
+      font-size: 13px;
+      color: #86868b;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .bar-group {
+      margin-bottom: 14px;
+    }
+
+    .bar-label {
+      font-size: 12px;
+      color: #86868b;
+      margin-bottom: 4px;
+    }
+
+    .bar-track {
+      height: 28px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 6px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+      width: 0;
+      transition: width 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .bar-fill.baseline {
+      background: #3a3a3c;
+    }
+
+    .bar-fill.nogate {
+      background: #c44;
+    }
+
+    .bar-fill.full {
+      background: linear-gradient(135deg, #2997ff, #30d5c8);
+      box-shadow: 0 0 20px rgba(41, 151, 255, 0.3);
+    }
+
+    .bar-fill.animated {
+      /* width set by JS */
+    }
+
+    .insight-box {
+      background: rgba(255, 255, 255, 0.04);
+      border-left: 3px solid;
+      border-image: linear-gradient(180deg, #2997ff, #30d5c8) 1;
+      border-radius: 0 12px 12px 0;
+      padding: 28px 32px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .insight-box strong {
+      color: #f5f5f7;
+    }
+
+    .insight-box p {
+      color: #b0b0b5;
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    /* ===== QUALITATIVE RESULTS ===== */
+    .qual-row-label {
+      font-size: 14px;
+      color: #86868b;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+
+    .qual-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      margin-bottom: 48px;
+    }
+
+    .qual-cell {
+      text-align: center;
+    }
+
+    .qual-cell .img-placeholder {
+      width: 100%;
+      aspect-ratio: 1;
+      margin-bottom: 8px;
+    }
+
+    .qual-cell .caption {
+      font-size: 11px;
+      color: #86868b;
+      line-height: 1.4;
+    }
+
+    /* ===== TABLE ===== */
+    .metrics-table-wrap {
+      overflow-x: auto;
+      margin: 0 auto;
+      max-width: 1000px;
+    }
+
+    .metrics-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+    }
+
+    .metrics-table thead th {
+      padding: 16px 20px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 13px;
+      color: #86868b;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .metrics-table tbody td {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      transition: background 0.2s;
+    }
+
+    .metrics-table tbody tr {
+      opacity: 0;
+      transform: translateX(-20px);
+      transition: opacity 0.5s ease-out, transform 0.5s ease-out, background 0.2s;
+    }
+
+    .metrics-table tbody tr.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .metrics-table tbody tr:hover td {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .metrics-table .highlight {
+      background: linear-gradient(135deg, #2997ff, #30d5c8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 700;
+    }
+
+    /* ===== LITERATURE COMPARISON ===== */
+    .lit-bars {
+      max-width: 800px;
+      margin: 0 auto 40px;
+    }
+
+    .lit-bar-group {
+      margin-bottom: 20px;
+    }
+
+    .lit-bar-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+
+    .lit-bar-header .name {
+      font-weight: 600;
+    }
+
+    .lit-bar-header .type {
+      color: #86868b;
+      font-size: 12px;
+    }
+
+    .lit-track {
+      height: 32px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .lit-fill {
+      height: 100%;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      padding-left: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      width: 0;
+      transition: width 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .lit-fill.neutral {
+      background: #3a3a3c;
+    }
+
+    .lit-fill.ours {
+      background: linear-gradient(135deg, #2997ff, #30d5c8);
+      box-shadow: 0 0 24px rgba(41, 151, 255, 0.3);
+    }
+
+    .footnote {
+      max-width: 800px;
+      margin: 0 auto;
+      font-size: 13px;
+      color: #555;
+      line-height: 1.7;
+      font-style: italic;
+    }
+
+    /* ===== TEAM ===== */
+    .team-cards {
+      display: flex;
+      justify-content: center;
+      gap: 60px;
+      flex-wrap: wrap;
+    }
+
+    .team-card {
+      text-align: center;
+    }
+
+    .team-photo {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      background-image: linear-gradient(#0a0a0a, #0a0a0a), linear-gradient(135deg, #2997ff, #30d5c8);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #86868b;
+      font-size: 12px;
+      margin: 0 auto 16px;
+      overflow: hidden;
+    }
+
+    .team-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    /* ===== CT IMAGE STYLES ===== */
+    .ct-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 16px;
+      display: block;
+    }
+
+    .comparison-img {
+      width: 220px;
+      height: 220px;
+      border-radius: 16px;
+      object-fit: cover;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .team-card h3 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .team-card p {
+      font-size: 14px;
+      color: #86868b;
+    }
+
+    /* ===== FOOTER ===== */
+    .footer-section {
+      min-height: auto;
+      padding: 80px 0 60px;
+      text-align: center;
+    }
+
+    .footer-section p {
+      color: #86868b;
+      font-size: 15px;
+      margin-bottom: 8px;
+    }
+
+    .footer-divider {
+      width: 40px;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.15);
+      margin: 24px auto;
+    }
+
+    .footer-links {
+      margin-top: 20px;
+    }
+
+    .footer-links a {
+      color: #2997ff;
+      text-decoration: none;
+      font-size: 14px;
+      margin: 0 12px;
+      transition: color 0.3s;
+    }
+
+    .footer-links a:hover {
+      color: #30d5c8;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 900px) {
+      .problem-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .feature-cards {
+        grid-template-columns: 1fr;
+      }
+
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .ablation-charts {
+        grid-template-columns: 1fr;
+      }
+
+      .qual-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .navbar a {
+        padding: 0 8px;
+        font-size: 11px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .comparison-box {
+        flex-direction: column;
+      }
+
+      .comparison-arrow {
+        transform: rotate(90deg);
+      }
+
+      .qual-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+
+      .team-cards {
+        gap: 32px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <a href="#problem">Problem</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#training">Training</a>
+    <a href="#ablation">Ablation</a>
+    <a href="#results">Results</a>
+    <a href="#comparison">Compare</a>
+    <a href="#team">Team</a>
+  </nav>
+
+  <!-- SECTION 1: HERO -->
+  <section class="hero" id="hero">
+    <div class="event-badge">Eskişehir Yapay Zeka Zirvesi 2026</div>
+    <h1 class="hero-title">
+      <span class="line">Dual-Domain</span>
+      <span class="line gradient-text">Low-Dose CT Enhancement</span>
+    </h1>
+    <p class="hero-subtitle">Differentiable Radon Bridge &amp; Cross-Attention Fusion</p>
+    <div class="hero-divider"></div>
+    <p class="hero-meta">20–21 Nisan 2026 · Anadolu Üniversitesi · Yunus Emre Salonu</p>
+    <div class="scroll-chevron">
+      <svg viewBox="0 0 24 24">
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    </div>
+  </section>
+
+  <!-- SECTION 2: THE PROBLEM -->
+  <section id="problem">
+    <div class="container">
+      <h2 class="section-heading reveal">The Challenge</h2>
+      <p class="section-subheading gradient-text reveal stagger-1">Radiation vs. Image Quality</p>
+      <div class="problem-grid">
+        <div class="problem-text reveal-left">
+          <p>Reducing radiation dose in CT scans saves patients from harmful exposure — but it introduces quantum noise,
+            streak artifacts, and granular textures that can obscure critical anatomical details. The diagnostic
+            dilemma: <strong style="color:#f5f5f7">safety vs. clarity</strong>.</p>
+        </div>
+        <div class="comparison-box reveal-right stagger-2">
+          <img class="comparison-img" src="Klinik_Degerlendirme_Setleri/Ornek_15_L_Bolgesi/1_LowDose.png" alt="Low-Dose CT (Noisy)">
+          <div class="comparison-arrow">→</div>
+          <img class="comparison-img" src="Klinik_Degerlendirme_Setleri/Ornek_15_L_Bolgesi/3_FullDose_GT.png" alt="Full-Dose CT (Clean)">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3: ARCHITECTURE -->
+  <section id="architecture">
+    <div class="container">
+      <h2 class="section-heading reveal">Our Architecture</h2>
+      <p class="section-subheading gradient-text reveal stagger-1">Physics-Informed Dual-Domain Learning</p>
+      <div class="arch-diagram reveal-scale stagger-2" style="height:600px;background:#fff;border-radius:12px;overflow:hidden;">
+        <object data="fig2_architecture%20(1).pdf#view=FitH&toolbar=0&navpanes=0" type="application/pdf" width="100%" height="100%">
+          <embed src="fig2_architecture%20(1).pdf#view=FitH&toolbar=0&navpanes=0" type="application/pdf" width="100%" height="100%" />
+          <p style="color:#1d1d1f;padding:20px;">
+            Architecture Diagram — Dual-Domain Network with Differentiable Radon Bridge.
+            <a href="fig2_architecture%20(1).pdf" target="_blank">Download PDF</a>
+          </p>
+        </object>
+      </div>
+      <div class="feature-cards">
+        <div class="glass-card reveal stagger-2">
+          <span class="icon">🔄</span>
+          <h3>Differentiable Radon Bridge</h3>
+          <p>Connects sinogram and image domains through differentiable forward/inverse Radon operators, enabling
+            end-to-end gradient flow across domains.</p>
+        </div>
+        <div class="glass-card reveal stagger-3">
+          <span class="icon">🎯</span>
+          <h3>Cross-Attention Fusion Gate</h3>
+          <p>Adaptively controls cross-domain feature injection using attention gating — suppressing noisy sinogram
+            artifacts while preserving useful structural information.</p>
+        </div>
+        <div class="glass-card reveal stagger-4">
+          <span class="icon">🧠</span>
+          <h3>Dual U-Net Streams</h3>
+          <p>Parallel sinogram U-Net and image U-Net process both projection and spatial domains simultaneously, bridged
+            by physics operators.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 4: TRAINING DYNAMICS -->
+  <section id="training">
+    <div class="container">
+      <h2 class="section-heading reveal">Training Dynamics</h2>
+      <p class="section-subheading secondary reveal stagger-1">100 Epochs of Convergence</p>
+      <div class="charts-grid">
+
+        <!-- Chart 1: Total Loss -->
+        <div class="chart-box reveal stagger-1" id="chart-loss">
+          <h3>Total Loss</h3>
+          <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet">
+            <!-- Grid -->
+            <line x1="40" y1="10" x2="40" y2="170" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+            <line x1="40" y1="170" x2="310" y2="170" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+            <line x1="40" y1="130" x2="310" y2="130" stroke="rgba(255,255,255,0.04)" stroke-width="0.5" />
+            <line x1="40" y1="90" x2="310" y2="90" stroke="rgba(255,255,255,0.04)" stroke-width="0.5" />
+            <line x1="40" y1="50" x2="310" y2="50" stroke="rgba(255,255,255,0.04)" stroke-width="0.5" />
+            <!-- Y labels -->
+            <text x="35" y="174" fill="#86868b" font-size="9" text-anchor="end">0.0</text>
+            <text x="35" y="134" fill="#86868b" font-size="9" text-anchor="end">0.3</text>
+            <text x="35" y="94" fill="#86868b" font-size="9" text-anchor="end">0.6</text>
+            <text x="35" y="54" fill="#86868b" font-size="9" text-anchor="end">0.9</text>
+            <!-- X labels -->
+            <text x="40" y="185" fill="#86868b" font-size="9" text-anchor="middle">0</text>
+            <text x="108" y="185" fill="#86868b" font-size="9" text-anchor="middle">25</text>
+            <text x="175" y="185" fill="#86868b" font-size="9" text-anchor="middle">50</text>
+            <text x="243" y="185" fill="#86868b" font-size="9" text-anchor="middle">75</text>
+            <text x="310" y="185" fill="#86868b" font-size="9" text-anchor="middle">100</text>
+            <!-- Train loss line (blue) -->
+            <polyline class="chart-line" data-chart="loss"
+              points="40,19 54,28 67,37 81,48 94,58 108,67 121,78 135,87 148,93 162,98 175,103 189,107 202,110 216,113 229,116 243,118 256,120 270,123 283,125 297,127 310,130"
+              fill="none" stroke="#2997ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <!-- Val loss line (teal) -->
+            <polyline class="chart-line" data-chart="loss"
+              points="40,24 54,39 67,31 81,43 94,34 108,56 121,65 135,73 148,81 162,85 175,91 189,96 202,99 216,102 229,106 243,108 256,111 270,113 283,115 297,117 310,119"
+              fill="none" stroke="#30d5c8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <div class="chart-legend">
+            <span><span class="legend-dot" style="background:#2997ff"></span> Train</span>
+            <span><span class="legend-dot" style="background:#30d5c8"></span> Val</span>
+          </div>
+        </div>
+
+        <!-- Chart 2: PSNR -->
+        <div class="chart-box reveal stagger-2" id="chart-psnr">
+          <h3>PSNR (dB)</h3>
+          <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet">
+            <line x1="40" y1="10" x2="40" y2="170" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+            <line x1="40" y1="170" x2="310" y2="170" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+            <line x1="40" y1="130" x2="310" y2="130" stroke="rgba(255,255,255,0.04)" stroke-width="0.5" />
+            <line x1="40" y1="90" x2="310" y2="90" stroke="rgba(255,255,255,0.04)" stroke-width="0.5" />
+            <line x1="40" y1="50" x2="310" y2="50" stroke="rgba(255,255,255,0.04)" stroke-width="0.5" />
+            <text x="35" y="174" fill="#86868b" font-size="9" text-anchor="end">18</text>
+            <text x="35" y="134" fill="#86868b" font-size="9" text-anchor="end">22</text>
+            <text x="35" y="94" fill="#86868b" font-size="9" text-anchor="end">26</text>
+            <text x="35" y="54" fill="#86868b" font-size="9" text-anchor="end">30</text>
+            <text x="35" y="14" fill="#86868b" font-size="9" text-anchor="end">34</text>
+            <text x="40" y="185" fill="#86868b" font-size="9" text-anchor="middle">0</text>
+            <text x="108" y="185" fill="#86868b" font-size="9" text-anchor="middle">25</text>
+            <text x="175" y="185" fill="#86868b" font-size="9" text-anchor="middle">50</text>
+            <text x="243" y="185" fill="#86868b" font-size="9" text-anchor="middle">75</text>
+            <text x="310" y="185" fill="#86868b" font-size="9" text-anchor="middle">100</text>
+            <!-- Image PSNR (blue) : 18→34 maps to y 170→10 -->
+            <!-- ep0~20→170, ep2~24.73→ 170-(24.73-18)*10= 102.7, ep10~26.92→80.8, ep20~28.40→66, ep50~29.68→54.88, ep99~30.64→47.24 -->
+            <polyline class="chart-line" data-chart="psnr"
+              points="40,170 49,137 54,115 67,103 81,93 94,86 108,81 135,75 162,68 175,65 202,60 229,56 256,53 283,50 310,47"
+              fill="none" stroke="#2997ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <!-- Sinogram PSNR (teal) : starts ~20, rises faster to ~30.64 -->
+            <polyline class="chart-line" data-chart="psnr"
+              points="40,170 49,145 54,120 67,100 81,88 94,78 108,70 135,60 162,53 175,50 202,46 229,43 256,41 283,39 310,37"
+              fill="none" stroke="#30d5c8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <div class="chart-legend">
+            <span><span class="legend-dot" style="background:#2997ff"></span> Image</span>
+            <span><span class="legend-dot" style="background:#30d5c8"></span> Sinogram</span>
+          </div>
+        </div>
+
+        <!-- Chart 3: SSIM -->
+        <div class="chart-box reveal stagger-3" id="chart-ssim">
+          <h3>SSIM</h3>
+          <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet">
+            <line x1="40" y1="10" x2="40" y2="170" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+            <line x1="40" y1="170" x2="310" y2="170" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+            <line x1="40" y1="130" x2="310" y2="130" stroke="rgba(255,255,255,0.04)" stroke-width="0.5" />
+            <line x1="40" y1="90" x2="310" y2="90" stroke="rgba(255,255,255,0.04)" stroke-width="0.5" />
+            <line x1="40" y1="50" x2="310" y2="50" stroke="rgba(255,255,255,0.04)" stroke-width="0.5" />
+            <!-- Y: 0.5 to 1.0, range 0.5, 170→10 = 160px for 0.5 range, so 320px per 1.0 -->
+            <text x="35" y="174" fill="#86868b" font-size="9" text-anchor="end">0.50</text>
+            <text x="35" y="134" fill="#86868b" font-size="9" text-anchor="end">0.625</text>
+            <text x="35" y="94" fill="#86868b" font-size="9" text-anchor="end">0.75</text>
+            <text x="35" y="54" fill="#86868b" font-size="9" text-anchor="end">0.875</text>
+            <text x="35" y="14" fill="#86868b" font-size="9" text-anchor="end">1.00</text>
+            <text x="40" y="185" fill="#86868b" font-size="9" text-anchor="middle">0</text>
+            <text x="108" y="185" fill="#86868b" font-size="9" text-anchor="middle">25</text>
+            <text x="175" y="185" fill="#86868b" font-size="9" text-anchor="middle">50</text>
+            <text x="243" y="185" fill="#86868b" font-size="9" text-anchor="middle">75</text>
+            <text x="310" y="185" fill="#86868b" font-size="9" text-anchor="middle">100</text>
+            <!-- Image SSIM: ep0~0.5→170, ep2~0.633→127.4, ep10~0.657→119.8, ep20~0.731→96.1, ep50~0.881→48.2, ep99~0.904→40.7 -->
+            <polyline class="chart-line" data-chart="ssim"
+              points="40,170 49,152 54,127 67,122 81,118 94,113 108,106 135,96 162,72 175,62 202,52 229,47 256,44 283,42 310,40"
+              fill="none" stroke="#2997ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <!-- Sinogram SSIM: ep2~0.719→99.9, ep10~0.738→93.8, ep20~0.784→79.1, ep50~0.888→45.9, ep99~0.902→41.4 -->
+            <polyline class="chart-line" data-chart="ssim"
+              points="40,170 49,140 54,100 67,95 81,92 94,88 108,84 135,79 162,60 175,50 202,44 229,41 256,39 283,37 310,36"
+              fill="none" stroke="#30d5c8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <div class="chart-legend">
+            <span><span class="legend-dot" style="background:#2997ff"></span> Image</span>
+            <span><span class="legend-dot" style="background:#30d5c8"></span> Sinogram</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 5: ABLATION STUDY -->
+  <section id="ablation">
+    <div class="container">
+      <h2 class="section-heading reveal">Ablation Study</h2>
+      <p class="section-subheading gradient-text reveal stagger-1">Every Component Matters</p>
+
+      <div class="ablation-charts">
+        <!-- CHEST -->
+        <div class="ablation-chart-box reveal stagger-1">
+          <h3>CHEST Split</h3>
+          <p class="sub">n = 2,417 slices</p>
+          <div class="bar-group">
+            <div class="bar-label">Image-Only (Baseline)</div>
+            <div class="bar-track">
+              <div class="bar-fill baseline" data-width="74.3" data-value="25.2187">25.22 dB</div>
+            </div>
+          </div>
+          <div class="bar-group">
+            <div class="bar-label">Dual-Domain (No Gate)</div>
+            <div class="bar-track">
+              <div class="bar-fill nogate" data-width="74.2" data-value="25.2016">25.20 dB</div>
+            </div>
+          </div>
+          <div class="bar-group">
+            <div class="bar-label">Full Model (Dual + Gate)</div>
+            <div class="bar-track">
+              <div class="bar-fill full" data-width="74.3" data-value="25.2190">25.22 dB</div>
+            </div>
+          </div>
+        </div>
+        <!-- LUNG -->
+        <div class="ablation-chart-box reveal stagger-2">
+          <h3>LUNG Split</h3>
+          <p class="sub">n = 1,045 slices</p>
+          <div class="bar-group">
+            <div class="bar-label">Image-Only (Baseline)</div>
+            <div class="bar-track">
+              <div class="bar-fill baseline" data-width="87.4" data-value="33.0500">33.05 dB</div>
+            </div>
+          </div>
+          <div class="bar-group">
+            <div class="bar-label">Dual-Domain (No Gate)</div>
+            <div class="bar-track">
+              <div class="bar-fill nogate" data-width="83.8" data-value="31.6824">31.68 dB</div>
+            </div>
+          </div>
+          <div class="bar-group">
+            <div class="bar-label">Full Model (Dual + Gate)</div>
+            <div class="bar-track">
+              <div class="bar-fill full" data-width="89.6" data-value="33.8800">33.88 dB</div>
+            </div>
+          </div>
+        </div>
+        <!-- ALL -->
+        <div class="ablation-chart-box reveal stagger-3">
+          <h3>ALL Split</h3>
+          <p class="sub">n = 3,462 slices</p>
+          <div class="bar-group">
+            <div class="bar-label">Image-Only (Baseline)</div>
+            <div class="bar-track">
+              <div class="bar-fill baseline" data-width="78.5" data-value="27.2753">27.28 dB</div>
+            </div>
+          </div>
+          <div class="bar-group">
+            <div class="bar-label">Dual-Domain (No Gate)</div>
+            <div class="bar-track">
+              <div class="bar-fill nogate" data-width="77.4" data-value="26.8855">26.89 dB</div>
+            </div>
+          </div>
+          <div class="bar-group">
+            <div class="bar-label">Full Model (Dual + Gate)</div>
+            <div class="bar-track">
+              <div class="bar-fill full" data-width="78.9" data-value="27.4118">27.41 dB</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="insight-box reveal stagger-4">
+        <p><strong>Key Finding:</strong> The gate mechanism is critical. Without it, raw sinogram features degrade image
+          quality by –1.37 dB in lung anatomy. The adaptive fusion gate recovers and surpasses baseline, proving that
+          <em>how</em> you fuse matters more than <em>whether</em> you fuse.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 6: QUALITATIVE RESULTS -->
+  <section id="results">
+    <div class="container">
+      <h2 class="section-heading reveal">Visual Results</h2>
+      <p class="section-subheading secondary reveal stagger-1">See the Difference</p>
+
+      <p class="qual-row-label reveal stagger-2">Chest Region (C Bölgesi)</p>
+      <div class="qual-grid" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="qual-cell reveal stagger-1">
+          <img class="ct-img" src="Klinik_Degerlendirme_Setleri/Ornek_01_C_Bolgesi/1_LowDose.png" alt="Low-Dose CT Case 1" style="aspect-ratio:1;">
+          <p class="caption">Low-Dose Input</p>
+        </div>
+        <div class="qual-cell reveal stagger-2">
+          <img class="ct-img" src="Klinik_Degerlendirme_Setleri/Ornek_01_C_Bolgesi/2_Enhanced_Output.png" alt="Enhanced Output Case 1" style="aspect-ratio:1;">
+          <p class="caption">Enhanced Output</p>
+        </div>
+        <div class="qual-cell reveal stagger-3">
+          <img class="ct-img" src="Klinik_Degerlendirme_Setleri/Ornek_01_C_Bolgesi/3_FullDose_GT.png" alt="Full-Dose GT Case 1" style="aspect-ratio:1;">
+          <p class="caption">Full-Dose Ground Truth</p>
+        </div>
+      </div>
+
+      <p class="qual-row-label reveal stagger-2">Lung Region (L Bölgesi)</p>
+      <div class="qual-grid" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="qual-cell reveal stagger-1">
+          <img class="ct-img" src="Klinik_Degerlendirme_Setleri/Ornek_15_L_Bolgesi/1_LowDose.png" alt="Low-Dose CT Case 2" style="aspect-ratio:1;">
+          <p class="caption">Low-Dose Input</p>
+        </div>
+        <div class="qual-cell reveal stagger-2">
+          <img class="ct-img" src="Klinik_Degerlendirme_Setleri/Ornek_15_L_Bolgesi/2_Enhanced_Output.png" alt="Enhanced Output Case 2" style="aspect-ratio:1;">
+          <p class="caption">Enhanced Output</p>
+        </div>
+        <div class="qual-cell reveal stagger-3">
+          <img class="ct-img" src="Klinik_Degerlendirme_Setleri/Ornek_15_L_Bolgesi/3_FullDose_GT.png" alt="Full-Dose GT Case 2" style="aspect-ratio:1;">
+          <p class="caption">Full-Dose Ground Truth</p>
+        </div>
+      </div>
+
+      <p class="qual-row-label reveal stagger-2">Additional Chest Sample</p>
+      <div class="qual-grid" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="qual-cell reveal stagger-1">
+          <img class="ct-img" src="Klinik_Degerlendirme_Setleri/Ornek_100_C_Bolgesi/1_LowDose.png" alt="Low-Dose CT Case 3" style="aspect-ratio:1;">
+          <p class="caption">Low-Dose Input</p>
+        </div>
+        <div class="qual-cell reveal stagger-2">
+          <img class="ct-img" src="Klinik_Degerlendirme_Setleri/Ornek_100_C_Bolgesi/2_Enhanced_Output.png" alt="Enhanced Output Case 3" style="aspect-ratio:1;">
+          <p class="caption">Enhanced Output</p>
+        </div>
+        <div class="qual-cell reveal stagger-3">
+          <img class="ct-img" src="Klinik_Degerlendirme_Setleri/Ornek_100_C_Bolgesi/3_FullDose_GT.png" alt="Full-Dose GT Case 3" style="aspect-ratio:1;">
+          <p class="caption">Full-Dose Ground Truth</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 7: QUANTITATIVE RESULTS TABLE -->
+  <section id="metrics">
+    <div class="container">
+      <h2 class="section-heading reveal">Performance Metrics</h2>
+      <p class="section-subheading secondary reveal stagger-1">&nbsp;</p>
+      <div class="metrics-table-wrap reveal stagger-2">
+        <table class="metrics-table">
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Case 1</th>
+              <th>Case 2</th>
+              <th>Case 3</th>
+              <th>Case 4</th>
+              <th>Mean ± Std</th>
+            </tr>
+          </thead>
+          <tbody id="metricsBody">
+            <tr>
+              <td>PSNR<sub>image</sub> (dB)</td>
+              <td>25.53</td>
+              <td>24.30</td>
+              <td>24.05</td>
+              <td>32.06</td>
+              <td class="highlight">26.48 ± 3.77</td>
+            </tr>
+            <tr>
+              <td>PSNR<sub>sinogram</sub> (dB)</td>
+              <td>28.90</td>
+              <td>27.63</td>
+              <td>27.83</td>
+              <td>35.43</td>
+              <td class="highlight">29.95 ± 3.70</td>
+            </tr>
+            <tr>
+              <td>SSIM<sub>image</sub></td>
+              <td>0.8529</td>
+              <td>0.8404</td>
+              <td>0.8379</td>
+              <td>0.8974</td>
+              <td class="highlight">0.857 ± 0.028</td>
+            </tr>
+            <tr>
+              <td>SSIM<sub>sinogram</sub></td>
+              <td>0.9759</td>
+              <td>0.9701</td>
+              <td>0.9710</td>
+              <td>0.9904</td>
+              <td class="highlight">0.977 ± 0.009</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 8: LITERATURE COMPARISON -->
+  <section id="comparison">
+    <div class="container">
+      <h2 class="section-heading reveal">How We Compare</h2>
+      <p class="section-subheading secondary reveal stagger-1">&nbsp;</p>
+
+      <div class="lit-bars">
+        <div class="lit-bar-group reveal stagger-1">
+          <div class="lit-bar-header">
+            <span class="name">RED-CNN <span class="secondary">(Chen 2017)</span></span>
+            <span class="type">Image-only · 33.56 dB · SSIM 0.913</span>
+          </div>
+          <div class="lit-track">
+            <div class="lit-fill neutral" data-width="89.7">33.56 dB</div>
+          </div>
+        </div>
+        <div class="lit-bar-group reveal stagger-2">
+          <div class="lit-bar-header">
+            <span class="name">WGAN-VGG <span class="secondary">(Yang 2018)</span></span>
+            <span class="type">Image-only + GAN · 33.24 dB · SSIM 0.920</span>
+          </div>
+          <div class="lit-track">
+            <div class="lit-fill neutral" data-width="88.8">33.24 dB</div>
+          </div>
+        </div>
+        <div class="lit-bar-group reveal stagger-3">
+          <div class="lit-bar-header">
+            <span class="name">DuDoNet <span class="secondary">(Lin 2019)</span></span>
+            <span class="type">Dual-domain (sequential) · 34.50 dB · SSIM 0.931</span>
+          </div>
+          <div class="lit-track">
+            <div class="lit-fill neutral" data-width="92.2">34.50 dB</div>
+          </div>
+        </div>
+        <div class="lit-bar-group reveal stagger-4">
+          <div class="lit-bar-header">
+            <span class="name" style="color:#2997ff">Ours — Lung Split</span>
+            <span class="type">Dual-domain + Gate · 33.88 dB · SSIM 0.847</span>
+          </div>
+          <div class="lit-track">
+            <div class="lit-fill ours" data-width="90.6">33.88 dB</div>
+          </div>
+        </div>
+        <div class="lit-bar-group reveal stagger-5">
+          <div class="lit-bar-header">
+            <span class="name" style="color:#30d5c8">Ours — All Split</span>
+            <span class="type">Dual-domain + Gate · 27.41 dB · SSIM 0.765</span>
+          </div>
+          <div class="lit-track">
+            <div class="lit-fill ours" data-width="73.3">27.41 dB</div>
+          </div>
+        </div>
+      </div>
+
+      <p class="footnote reveal stagger-5">
+        *Note: Literature values use LDCT→NDCT benchmark on Mayo/AAPM dataset. Our model trains on a different data
+        configuration; direct comparison is approximate. Lung-split PSNR (33.88 dB) is competitive with
+        state-of-the-art.
+      </p>
+    </div>
+  </section>
+
+  <!-- SECTION 9: THE TEAM -->
+  <section id="team">
+    <div class="container">
+      <h2 class="section-heading reveal">The Team</h2>
+      <p class="section-subheading secondary reveal stagger-1">&nbsp;</p>
+      <div class="team-cards">
+        <div class="team-card reveal stagger-1">
+          <div class="team-photo"><img src="OmerHoca.jpg" alt="Ömer Nezih Gerek"></div>
+          <h3>Ömer Nezih Gerek</h3>
+          <p>Supervisor · Eskişehir Technical University</p>
+        </div>
+        <div class="team-card reveal stagger-2">
+          <div class="team-photo"><img src="Serdar Bal.jpg" alt="Serdar Bal"></div>
+          <h3>Serdar Bal</h3>
+          <p>Researcher · Eskişehir Technical University</p>
+        </div>
+        <div class="team-card reveal stagger-3">
+          <div class="team-photo"><img src="AhmetFurkan.jpg" alt="Ahmet Furkan Güven"></div>
+          <h3>Ahmet Furkan Güven</h3>
+          <p>Researcher · Eskişehir Technical University</p>
+        </div>
+        <div class="team-card reveal stagger-4">
+          <div class="team-photo"><img src="derya umut kulalı.jpg" alt="Derya Umut Kulalı"></div>
+          <h3>Derya Umut Kulalı</h3>
+          <p>Researcher · Eskişehir Technical University</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 10: FOOTER -->
+  <section class="footer-section">
+    <div class="container">
+      <p class="reveal" style="color:#f5f5f7; font-size:18px; font-weight:600;">Presented at Eskisehir Yapay Zeka
+        Zirvesi 2026</p>
+      <p class="reveal stagger-1">Anadolu Universitesi · 20–21 Nisan 2026</p>
+      <div class="footer-divider"></div>
+      <p class="reveal stagger-2">Eskisehir Osmangazi Universitesi · Bilgisayar Muhendisligi</p>
+      <div class="footer-links reveal stagger-3">
+        <a href="#">GitHub</a>
+        <a href="#">Contact</a>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    (function () {
+      /* ===== INTERSECTION OBSERVER — Reveal animations ===== */
+      const revealEls = document.querySelectorAll('.reveal, .reveal-scale, .reveal-left, .reveal-right');
+      const revealObs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) {
+            e.target.classList.add('visible');
+          }
+        });
+      }, { threshold: 0.15 });
+      revealEls.forEach(function (el) { revealObs.observe(el); });
+
+      /* ===== TABLE ROW ANIMATION ===== */
+      const tableRows = document.querySelectorAll('#metricsBody tr');
+      const tableObs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) {
+            var rows = e.target.querySelectorAll ? [e.target] : [];
+            if (e.target.id === 'metricsBody') rows = e.target.querySelectorAll('tr');
+            rows.forEach(function (row, i) {
+              setTimeout(function () { row.classList.add('visible'); }, i * 120);
+            });
+          }
+        });
+      }, { threshold: 0.15 });
+      tableRows.forEach(function (r) { tableObs.observe(r); });
+
+      /* ===== SVG LINE DRAW ANIMATION ===== */
+      const chartLines = document.querySelectorAll('.chart-line');
+      chartLines.forEach(function (line) {
+        var len = line.getTotalLength();
+        line.style.strokeDasharray = len;
+        line.style.strokeDashoffset = len;
+      });
+      var chartBoxes = document.querySelectorAll('.chart-box');
+      var chartObs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) {
+            var lines = e.target.querySelectorAll('.chart-line');
+            lines.forEach(function (line, i) {
+              setTimeout(function () {
+                line.style.transition = 'stroke-dashoffset 1.8s cubic-bezier(0.25,0.46,0.45,0.94)';
+                line.style.strokeDashoffset = '0';
+              }, i * 200);
+            });
+            chartObs.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.2 });
+      chartBoxes.forEach(function (b) { chartObs.observe(b); });
+
+      /* ===== BAR CHART ANIMATIONS (Ablation + Literature) ===== */
+      var barObs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) {
+            var fills = e.target.querySelectorAll('.bar-fill, .lit-fill');
+            fills.forEach(function (f, i) {
+              setTimeout(function () {
+                f.style.width = f.getAttribute('data-width') + '%';
+              }, i * 100);
+            });
+            barObs.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.2 });
+      document.querySelectorAll('.ablation-chart-box, .lit-bar-group').forEach(function (el) {
+        barObs.observe(el);
+      });
+
+      /* ===== ACTIVE NAV LINK ===== */
+      var navLinks = document.querySelectorAll('.navbar a');
+      var sections = [];
+      navLinks.forEach(function (a) {
+        var id = a.getAttribute('href').slice(1);
+        var sec = document.getElementById(id);
+        if (sec) sections.push({ el: sec, link: a });
+      });
+      var navObs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) {
+            navLinks.forEach(function (l) { l.classList.remove('active'); });
+            sections.forEach(function (s) {
+              if (s.el === e.target) s.link.classList.add('active');
+            });
+          }
+        });
+      }, { threshold: 0.25, rootMargin: '-48px 0px -50% 0px' });
+      sections.forEach(function (s) { navObs.observe(s.el); });
+    })();
+  </script>
+</body>
+
+</html>
